@@ -1,0 +1,21 @@
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
+import { updateQuantity, removeItem, selectCartCount, selectCartItems, selectCartTotal } from './CartSlice';
+import { formatPrice } from './products';
+
+export default function CartItem() {
+  const dispatch = useDispatch();
+  const items = useSelector(selectCartItems);
+  const itemCount = useSelector(selectCartCount);
+  const total = useSelector(selectCartTotal);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  return (
+    <main className="cart-page page-shell">
+      <div className="cart-title-area"><div><p className="section-kicker">YOUR GREEN LITTLE HAUL</p><h1>Your shopping <em>basket.</em></h1><p>Good choices grow into great spaces.</p></div><span className="cart-title-art">✳</span></div>
+      {items.length === 0 ? <div className="empty-cart"><div className="empty-cart-art"><img src="/plants/pothos.svg" alt="Illustrated golden pothos"/></div><h2>Your basket's feeling a little bare.</h2><p>Let's find you something lovely to grow.</p><Link to="/plants" className="btn btn-primary">Explore plants <ArrowUpRight size={18}/></Link></div> : <div className="cart-layout"><section className="cart-items" aria-label="Items in shopping cart"><div className="cart-items-head"><h2>In your basket <span>({itemCount} {itemCount === 1 ? 'item' : 'items'})</span></h2><span>PRICE / QUANTITY</span></div>{items.map((item) => <article className="cart-line" key={item.id}><div className="cart-line-img"><img src={item.image} alt={`${item.name} houseplant`}/></div><div className="cart-line-main"><div><h3>{item.name}</h3><p>Houseplant · Nursery favorite</p><span className="cart-unit-price">{formatPrice(item.price)} each</span></div><button type="button" className="remove-btn" onClick={() => dispatch(removeItem(item.id))} aria-label={`Remove ${item.name} from cart`}><Trash2 size={16}/> <span>Remove</span></button></div><div className="cart-line-controls"><strong>{formatPrice(item.price * item.quantity)}</strong><div className="quantity-stepper"><button type="button" aria-label={`Decrease ${item.name} quantity`} onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))}><Minus size={16}/></button><span aria-label={`${item.name} quantity ${item.quantity}`}>{item.quantity}</span><button type="button" aria-label={`Increase ${item.name} quantity`} onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}><Plus size={16}/></button></div></div></article>)}<Link to="/plants" className="continue-link"><ArrowLeft size={17}/> Continue shopping</Link></section><aside className="order-summary"><div className="summary-head"><span>YOUR ORDER</span><ShoppingBag size={22}/></div><h2>Order summary</h2><div className="summary-line"><span>Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})</span><strong>{formatPrice(total)}</strong></div><div className="summary-line"><span>Shipping</span><span className="shipping-text">Calculated at checkout</span></div><div className="summary-divider"/><div className="summary-total"><span>Estimated total</span><strong>{formatPrice(total)}</strong></div><button type="button" className="btn btn-primary checkout-btn" onClick={() => setCheckoutOpen(true)}>Checkout <ArrowRight size={18}/></button><p className="checkout-caption"><Check size={15}/> Your new plants are almost home.</p><div className="summary-note"><span>✳</span><p>A happier space is just a little green away.</p></div></aside></div>}
+      {checkoutOpen && <div className="modal-backdrop" onMouseDown={(e) => {if (e.target === e.currentTarget) setCheckoutOpen(false);}}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title"><button className="modal-close" type="button" aria-label="Close" onClick={() => setCheckoutOpen(false)}><X size={20}/></button><span className="modal-symbol">✳</span><h2 id="checkout-title">Something lovely is growing!</h2><p>Checkout is coming soon. Your plants are saved in your basket for now.</p><button type="button" className="btn btn-primary" onClick={() => setCheckoutOpen(false)}>Keep exploring <ArrowRight size={17}/></button></div></div>}
+    </main>
+  );
+}
